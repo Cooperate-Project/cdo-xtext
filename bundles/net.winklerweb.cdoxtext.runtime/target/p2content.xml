@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<units size='1'>
+  <unit id='net.winklerweb.cdoxtext.runtime' version='0.1.0.201605171352' singleton='false'>
+    <update id='net.winklerweb.cdoxtext.runtime' range='[0.0.0,0.1.0.201605171352)' severity='0'/>
+    <properties size='4'>
+      <property name='org.eclipse.equinox.p2.name' value='CDO Xtext Bridge Runtime'/>
+      <property name='maven-groupId' value='de.cooperateproject.cdoxtext'/>
+      <property name='maven-artifactId' value='net.winklerweb.cdoxtext.runtime'/>
+      <property name='maven-version' value='0.1.0-SNAPSHOT'/>
+    </properties>
+    <provides size='4'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='net.winklerweb.cdoxtext.runtime' version='0.1.0.201605171352'/>
+      <provided namespace='osgi.bundle' name='net.winklerweb.cdoxtext.runtime' version='0.1.0.201605171352'/>
+      <provided namespace='java.package' name='net.winklerweb.cdoxtext.runtime' version='0.0.0'/>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+    </provides>
+    <requires size='13'>
+      <required namespace='osgi.bundle' name='org.eclipse.ui' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.xtext.xbase.lib' range='2.4.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.xtext.ui' range='2.4.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.emf.cdo.ui' range='4.2.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.emf.compare' range='3.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.emf.compare.rcp' range='2.1.1'/>
+      <required namespace='osgi.bundle' name='org.eclipse.emf.compare.rcp.ui' range='3.0.1'/>
+      <required namespace='osgi.bundle' name='org.eclipse.ui.ide' range='3.9.1'/>
+      <required namespace='osgi.bundle' name='org.eclipse.emf.compare.ide.ui' range='3.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.emf.compare.edit' range='3.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.emf.compare.ide' range='3.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.compare' range='3.5.401'/>
+    </requires>
+    <artifacts size='1'>
+      <artifact classifier='osgi.bundle' id='net.winklerweb.cdoxtext.runtime' version='0.1.0.201605171352'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='manifest'>
+          Bundle-SymbolicName: net.winklerweb.cdoxtext.runtime&#xA;Bundle-Version: 0.1.0.201605171352&#xA;
+        </instruction>
+      </instructions>
+    </touchpointData>
+  </unit>
+</units>

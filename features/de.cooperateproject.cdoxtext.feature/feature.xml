@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="de.cooperateproject.cdoxtext.feature"
+      label="CDO-Xtext Integration"
+      version="1.0.0.qualifier"
+      license-feature="org.eclipse.license"
+      license-feature-version="1.0.1.v20140414-1359">
+
+   <description>
+      CDO-Xtext integration.
+   </description>
+
+   <copyright>
+      Copyright (c) 2015-2017 Cooperate Project Team, Germany
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <plugin
+         id="net.winklerweb.cdoxtext.generator"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="net.winklerweb.cdoxtext.runtime"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

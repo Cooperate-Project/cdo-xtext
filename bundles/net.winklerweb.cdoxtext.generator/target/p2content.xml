@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<units size='1'>
+  <unit id='net.winklerweb.cdoxtext.generator' version='0.1.0.201605171352' singleton='false'>
+    <update id='net.winklerweb.cdoxtext.generator' range='[0.0.0,0.1.0.201605171352)' severity='0'/>
+    <properties size='4'>
+      <property name='org.eclipse.equinox.p2.name' value='CDO Xtext Bridge Generator'/>
+      <property name='maven-groupId' value='de.cooperateproject.cdoxtext'/>
+      <property name='maven-artifactId' value='net.winklerweb.cdoxtext.generator'/>
+      <property name='maven-version' value='0.1.0-SNAPSHOT'/>
+    </properties>
+    <provides size='5'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='net.winklerweb.cdoxtext.generator' version='0.1.0.201605171352'/>
+      <provided namespace='osgi.bundle' name='net.winklerweb.cdoxtext.generator' version='0.1.0.201605171352'/>
+      <provided namespace='java.package' name='net.winklerweb.cdoxtext.generator' version='0.0.0'/>
+      <provided namespace='java.package' name='net.winklerweb.cdoxtext.generator.emfcompare' version='0.0.0'/>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+    </provides>
+    <requires size='3'>
+      <required namespace='osgi.bundle' name='org.eclipse.xtext' range='2.4.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.xtext.generator' range='2.4.0'/>
+      <required namespace='osgi.bundle' name='net.winklerweb.cdoxtext.runtime' range='0.1.0'/>
+    </requires>
+    <artifacts size='1'>
+      <artifact classifier='osgi.bundle' id='net.winklerweb.cdoxtext.generator' version='0.1.0.201605171352'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='manifest'>
+          Bundle-SymbolicName: net.winklerweb.cdoxtext.generator&#xA;Bundle-Version: 0.1.0.201605171352&#xA;
+        </instruction>
+      </instructions>
+    </touchpointData>
+  </unit>
+</units>
