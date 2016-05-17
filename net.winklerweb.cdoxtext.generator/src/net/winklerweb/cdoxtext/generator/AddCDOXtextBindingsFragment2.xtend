@@ -6,6 +6,7 @@ import org.eclipse.xtext.xtext.generator.AbstractXtextGeneratorFragment
 import org.eclipse.xtext.xtext.generator.model.GuiceModuleAccess
 
 import static extension org.eclipse.xtext.xtext.generator.model.TypeReference.*
+import net.winklerweb.cdoxtext.runtime.CDOXtextEditor
 
 class AddCDOXtextBindingsFragment2 extends AbstractXtextGeneratorFragment {
 	
@@ -23,6 +24,7 @@ class AddCDOXtextBindingsFragment2 extends AbstractXtextGeneratorFragment {
 		new GuiceModuleAccess.BindingFactory()
 		.addTypeToType("org.eclipse.xtext.ui.editor.model.XtextDocumentProvider".typeRef, CDOXtextDocumentProvider.typeRef)
 		.addTypeToType("org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory".typeRef, CDOResourceForEditorInputFactory.typeRef)
+		.addTypeToType("org.eclipse.xtext.ui.editor.XtextEditor".typeRef, CDOXtextEditor.typeRef)
 		.contributeTo(language.eclipsePluginGenModule)
 	}
 	

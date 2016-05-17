@@ -40,7 +40,7 @@ import org.eclipse.xtext.ui.editor.model.XtextDocumentProvider
 
 class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
-	static var Map<IEditorInput, OriginalInputState> inputToResource = Collections::synchronizedMap(Maps::newHashMap()) 
+	static var Map<IEditorInput, CDOXtextResourceState> inputToResource = Collections::synchronizedMap(Maps::newHashMap()) 
  
 	@Inject
 	var ISerializer serializer
@@ -81,9 +81,9 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
 		// we need to remember the XtextResource and the original object for saving ...
 		if(contents != null) {
-			inputToResource.put(editorInput, new OriginalInputState(xtextResource, contents.cdoID, System.currentTimeMillis()))			
+			inputToResource.put(editorInput, new CDOXtextResourceState(xtextResource, contents.cdoID, System.currentTimeMillis()))			
 		} else {
-			inputToResource.put(editorInput, new OriginalInputState(xtextResource, null, CDORevision::INVALID_DATE))				
+			inputToResource.put(editorInput, new CDOXtextResourceState(xtextResource, null, CDORevision::INVALID_DATE))				
 		}
 	
 		return true
@@ -158,7 +158,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val transaction = targetResource.cdoView() as CDOTransaction
 		val newCommitInfo = transaction.commit(mon.newChild(3))
 		val rootObject = targetResource.contents.head as CDOObject
-		inputToResource.put(cdoInput, new OriginalInputState(documentResource, rootObject.cdoID, newCommitInfo.timeStamp))	
+		inputToResource.put(cdoInput, new CDOXtextResourceState(documentResource, rootObject.cdoID, newCommitInfo.timeStamp))	
 
 		document.set(serializer.serialize(rootObject))
  
@@ -180,16 +180,4 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		return super.createAnnotationModel(element)
 	}
 	
-}
-
-class OriginalInputState {
-	public XtextResource resource
-	public CDOID objectId
-	public long timestamp
-	
-	new(XtextResource resource, CDOID cdoid, long timestamp) {
-		this.resource = resource
-		this.objectId = cdoid
-		this.timestamp = timestamp
-	}
 }
