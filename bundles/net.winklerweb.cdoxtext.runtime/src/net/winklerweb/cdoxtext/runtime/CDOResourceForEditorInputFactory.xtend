@@ -17,6 +17,8 @@ import org.eclipse.ui.IEditorInput
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory
 import org.eclipse.xtext.ui.editor.model.ResourceForIEditorInputFactory
+import org.eclipse.xtext.util.UriUtil
+import org.eclipse.core.runtime.URIUtil
 
 class CDOResourceForEditorInputFactory extends ResourceForIEditorInputFactory implements IResourceForEditorInputFactory {
 
@@ -30,7 +32,7 @@ class CDOResourceForEditorInputFactory extends ResourceForIEditorInputFactory im
 
 		val cdoEditorInput = input as CDOLobEditorInput
 		val emfUri = cdoEditorInput.resource.URI
-		val uri = URI::create(emfUri.toString)
+		val uri = URIUtil::fromString(emfUri.toString)
 
 		val resource = createResource(uri)
 		if (resource instanceof XtextResource) {
