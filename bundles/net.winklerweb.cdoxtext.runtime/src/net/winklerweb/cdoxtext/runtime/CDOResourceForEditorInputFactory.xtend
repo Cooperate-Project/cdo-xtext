@@ -11,7 +11,7 @@
  */
 package net.winklerweb.cdoxtext.runtime
 
-import java.net.URI
+import org.eclipse.core.runtime.URIUtil
 import org.eclipse.emf.cdo.internal.ui.CDOLobEditorInput
 import org.eclipse.ui.IEditorInput
 import org.eclipse.xtext.resource.XtextResource
@@ -30,7 +30,7 @@ class CDOResourceForEditorInputFactory extends ResourceForIEditorInputFactory im
 
 		val cdoEditorInput = input as CDOLobEditorInput
 		val emfUri = cdoEditorInput.resource.URI
-		val uri = URI::create(emfUri.toString)
+		val uri = URIUtil::fromString(emfUri.toString)
 
 		val resource = createResource(uri)
 		if (resource instanceof XtextResource) {
