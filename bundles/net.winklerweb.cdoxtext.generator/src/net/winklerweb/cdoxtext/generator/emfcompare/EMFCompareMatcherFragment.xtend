@@ -1,7 +1,6 @@
 package net.winklerweb.cdoxtext.generator.emfcompare
 
 import com.google.inject.Inject
-import com.google.inject.name.Named
 import org.eclipse.xtext.Grammar
 import org.eclipse.xtext.GrammarUtil
 import org.eclipse.xtext.generator.BindFactory
@@ -14,16 +13,14 @@ class EMFCompareMatcherFragment extends Xtend2GeneratorFragment {
 	
 	@Inject Grammar grammar
 	
-	@Inject @Named("fileHeader") String fileHeader
-	
 	@Inject extension Naming
 	
 	def matchEngineFactoryName(Grammar grammar) {
-		naming.basePackageUi(grammar) + ".cdoxtext."	+ GrammarUtil.getName(grammar) + "MatchEngineFactory";
+		naming.basePackageUi(grammar) + ".cdoxtext."	+ GrammarUtil.getSimpleName(grammar) + "MatchEngineFactory";
 	}
 	
 	def distanceFunctionName(Grammar grammar) {
-		naming.basePackageUi(grammar) + ".cdoxtext."	+ GrammarUtil.getName(grammar) + "DistanceFunction";
+		naming.basePackageUi(grammar) + ".cdoxtext."	+ GrammarUtil.getSimpleName(grammar) + "DistanceFunction";
 	}
 
 	override getGuiceBindingsUi(Grammar grammar) {
@@ -49,7 +46,7 @@ class EMFCompareMatcherFragment extends Xtend2GeneratorFragment {
 		  <extension
 		        point="org.eclipse.emf.compare.rcp.matchEngine">
 		     <engineFactory
-		           class="«grammar.executableExtensionFactory»:«grammar.matchEngineFactoryName»"
+		           class="Â«grammar.executableExtensionFactoryÂ»:Â«grammar.matchEngineFactoryNameÂ»"
 		           ranking="20">
 		     </engineFactory>
 		  </extension>	
@@ -64,10 +61,8 @@ class EMFCompareMatcherFragment extends Xtend2GeneratorFragment {
 	def generateMatchEngineFactory(Xtend2ExecutionContext ctx) {
 		ctx.writeFile(Generator::SRC_UI, grammar.matchEngineFactoryName.asPath + ".xtend",
 			'''
-			/*
-			 * «fileHeader»
-			 */
-			package «grammar.matchEngineFactoryName.toPackageName»
+			Â«fileHeaderÂ»
+			package Â«grammar.matchEngineFactoryName.toPackageNameÂ»
 			
 			import com.google.inject.Inject
 			import com.google.inject.Provider
@@ -77,7 +72,7 @@ class EMFCompareMatcherFragment extends Xtend2GeneratorFragment {
 			import org.eclipse.emf.compare.match.eobject.ProximityEObjectMatcher
 			import org.eclipse.emf.compare.match.impl.MatchEngineFactoryImpl
 			
-			class «grammar.matchEngineFactoryName.toSimpleName» extends MatchEngineFactoryImpl { 
+			class Â«grammar.matchEngineFactoryName.toSimpleNameÂ» extends MatchEngineFactoryImpl { 
 				
 				@Inject
 				Provider<ProximityEObjectMatcher$DistanceFunction> dfProvider
@@ -95,10 +90,8 @@ class EMFCompareMatcherFragment extends Xtend2GeneratorFragment {
 	def generateDistanceFunction(Xtend2ExecutionContext ctx) {
 		ctx.writeFile(Generator::SRC_UI, grammar.distanceFunctionName.asPath + ".xtend",
 			'''
-			/*
-			 «fileHeader»
-			 */
-			package «grammar.distanceFunctionName.toPackageName»
+			Â«fileHeaderÂ»
+			package Â«grammar.distanceFunctionName.toPackageNameÂ»
 			
 			import com.google.inject.Inject
 			import java.util.List
@@ -112,7 +105,7 @@ class EMFCompareMatcherFragment extends Xtend2GeneratorFragment {
 			import org.eclipse.emf.ecore.util.FeatureMap
 			import org.eclipse.emf.ecore.util.FeatureMapUtil
 			
-			class «grammar.distanceFunctionName.toSimpleName» implements ProximityEObjectMatcher$DistanceFunction { 
+			class Â«grammar.distanceFunctionName.toSimpleNameÂ» implements ProximityEObjectMatcher$DistanceFunction { 
 				
 				@Inject
 				EcoreUtil$EqualityHelper eqHelper
