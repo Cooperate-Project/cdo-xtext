@@ -17,6 +17,7 @@ import org.eclipse.ui.IEditorInput
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory
 import org.eclipse.xtext.ui.editor.model.ResourceForIEditorInputFactory
+import org.eclipse.xtext.resource.ResourceSetReferencingResourceSet
 
 class CDOResourceForEditorInputFactory extends ResourceForIEditorInputFactory implements IResourceForEditorInputFactory {
 
@@ -35,6 +36,9 @@ class CDOResourceForEditorInputFactory extends ResourceForIEditorInputFactory im
 		val resource = createResource(uri)
 		if (resource instanceof XtextResource) {
 			(resource as XtextResource).validationDisabled = false
+		}
+		if (resource.resourceSet instanceof ResourceSetReferencingResourceSet) {
+			(resource.resourceSet as ResourceSetReferencingResourceSet).referencedResourceSets.add(cdoEditorInput.resource.cdoView.resourceSet)
 		}
 		return resource
 	}
