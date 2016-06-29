@@ -13,6 +13,9 @@ class AddCDOXtextBindingsFragment extends Xtend2GeneratorFragment {
 			.addTypeToType(
 			  "org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory",
 			  "net.winklerweb.cdoxtext.runtime.CDOResourceForEditorInputFactory")
+			.addTypeToType(
+			  "org.eclipse.xtext.ui.editor.XtextEditor",
+			  "net.winklerweb.cdoxtext.runtime.CDOXtextEditor")
 			.bindings
 	}
 
