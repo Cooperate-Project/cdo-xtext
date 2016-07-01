@@ -24,6 +24,8 @@ import org.eclipse.swt.widgets.Display
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.ui.editor.model.IXtextDocument
 import org.eclipse.xtext.util.concurrent.IUnitOfWork
+import org.eclipse.emf.cdo.view.CDOAdapterPolicy
+import org.eclipse.emf.cdo.eresource.CDOResource
 
 class CDOHistoryHandler {
 
@@ -36,12 +38,15 @@ class CDOHistoryHandler {
 
 		val executor = Executors.newFixedThreadPool(1)
 
+		/*
+		 * TODO Implementation not complete
+		 * Not only the resource itself can change but also the referenced resources. 
+		 */
 		override notifyEvent(IEvent arg0) {
 			if (arg0 instanceof CDOViewInvalidationEvent) {
 				val event = (arg0 as CDOViewInvalidationEvent)
-				if (arg0.dirtyObjects.map[root].filter(o|o != null).exists [o|
-					targetObject.cdoDirectResource.equals(o.cdoDirectResource)
-				]) {
+				val changedResources = arg0.dirtyObjects.filter(EObject).map[root].filter(o|o != null).map[eResource].filter(CDOResource).toSet
+				if (changedResources.contains(targetObject.cdoDirectResource)) {
 					executor.submit(new Runnable() {
 						override run() {
 							applyRemoteResourceChanges(event.timeStamp)
