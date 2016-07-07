@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.SubMonitor
 import org.eclipse.emf.cdo.CDOObject
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint
 import org.eclipse.emf.cdo.common.revision.CDORevision
+import org.eclipse.emf.cdo.eresource.CDOResource
 import org.eclipse.emf.cdo.view.CDOView
 import org.eclipse.emf.cdo.view.CDOViewInvalidationEvent
 import org.eclipse.emf.common.util.BasicMonitor
@@ -24,10 +25,8 @@ import org.eclipse.swt.widgets.Display
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.ui.editor.model.IXtextDocument
 import org.eclipse.xtext.util.concurrent.IUnitOfWork
-import org.eclipse.emf.cdo.view.CDOAdapterPolicy
-import org.eclipse.emf.cdo.eresource.CDOResource
 
-class CDOHistoryHandler {
+class CDOHistoryHandler implements IStartStop {
 
 	@FunctionalInterface
 	public interface DocumentGetter {
@@ -74,7 +73,7 @@ class CDOHistoryHandler {
 		this.documentGetter = documentGetter
 	}
 
-	def start() {
+	override start() {
 		previousTimestamp = cdoView.getObject(targetObject.cdoID).cdoHistory?.lastElement?.timeStamp
 		if (previousTimestamp == 0) {
 			previousTimestamp = CDOBranchPoint.UNSPECIFIED_DATE
@@ -82,7 +81,7 @@ class CDOHistoryHandler {
 		cdoView.addListener(viewListener);
 	}
 
-	def stop() {
+	override stop() {
 		cdoView.removeListener(viewListener);
 	}
 
@@ -96,7 +95,7 @@ class CDOHistoryHandler {
 		}
 	}
 
-	def void merge(IXtextDocument targetDocument, CDOResourceState oldState, CDOResourceState newState) {
+	private def void merge(IXtextDocument targetDocument, CDOResourceState oldState, CDOResourceState newState) {
 		Display.^default.syncExec(new Runnable() {
 			override run() {
 				targetDocument.modify(new IUnitOfWork.Void<XtextResource>() {
@@ -115,7 +114,7 @@ class CDOHistoryHandler {
 		});
 	}
 
-	def void merge(EObject targetRoot, EObject oldRoot, EObject newRoot) {
+	private def void merge(EObject targetRoot, EObject oldRoot, EObject newRoot) {
 		val monitor = new NullProgressMonitor();
 		val mon = SubMonitor::convert(monitor, 5)
 

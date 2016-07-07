@@ -11,7 +11,7 @@ import org.eclipse.xtext.ui.editor.XtextEditor;
 
 public class CDOXtextEditor extends XtextEditor {
 
-	private CDOHistoryHandler historyHandler;
+	private IStartStop historyHandler = IStartStop.NOP;
 
 	@Override
 	protected void doSetInput(IEditorInput input) throws CoreException {
@@ -29,9 +29,7 @@ public class CDOXtextEditor extends XtextEditor {
 
 	@Override
 	public void dispose() {
-		if (historyHandler != null) {
-			historyHandler.stop();			
-		}
+		historyHandler.stop();			
 		super.dispose();
 	}
 
@@ -41,9 +39,7 @@ public class CDOXtextEditor extends XtextEditor {
 		try {
 			super.doSave(progressMonitor);			
 		} finally {
-			if (historyHandler != null) {
-				historyHandler.start();				
-			}
+			historyHandler.start();				
 		}
 	}
 	
