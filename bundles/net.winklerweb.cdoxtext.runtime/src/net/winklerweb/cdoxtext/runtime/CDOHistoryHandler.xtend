@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Display
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.ui.editor.model.IXtextDocument
 import org.eclipse.xtext.util.concurrent.IUnitOfWork
+import org.eclipse.emf.compare.DifferenceState
 
 class CDOHistoryHandler implements IStartStop {
 
@@ -96,9 +97,7 @@ class CDOHistoryHandler implements IStartStop {
 	}
 
 	private def void merge(IXtextDocument targetDocument, CDOResourceState oldState, CDOResourceState newState) {
-		Display.^default.syncExec(new Runnable() {
-			override run() {
-				targetDocument.modify(new IUnitOfWork.Void<XtextResource>() {
+		val unitOfWork = new IUnitOfWork.Void<XtextResource>() {
 					override process(XtextResource state) throws Exception {
 						val CDORootClosable oldRoot = oldState.root;
 						val CDORootClosable newRoot = newState.root;
@@ -109,7 +108,11 @@ class CDOHistoryHandler implements IStartStop {
 							IOUtil.closeSilent(newRoot)
 						}
 					}
-				})
+				};
+		
+		Display.^default.syncExec(new Runnable() {
+			override run() {
+				targetDocument.modify(unitOfWork)
 			}
 		});
 	}
@@ -127,5 +130,12 @@ class CDOHistoryHandler implements IStartStop {
 			diff.source == DifferenceSource::LEFT
 		])
 		merger.copyAllLeftToRight(result.differences, BasicMonitor::toMonitor(mon.newChild(1)))
+		
+		/*
+		  TODO Merging does not work in many cases
+			val differences = result.differences
+			val remainingDifferences = differences.filter[state != DifferenceState.MERGED] <-- often critical but not merged
+			val realRemainingDifferences = remainingDifferences.filter[source == DifferenceSource.LEFT]
+		 */
 	}
 }
