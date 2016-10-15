@@ -18,6 +18,12 @@
       %license
    </license>
 
+   <requires>
+      <import feature="org.eclipse.emf.compare" version="3.2.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.xtext.sdk" version="2.10.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.emf.cdo" version="4.5.0" match="greaterOrEqual"/>
+   </requires>
+
    <plugin
          id="net.winklerweb.cdoxtext.generator"
          download-size="0"

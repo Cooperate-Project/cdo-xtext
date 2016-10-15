@@ -16,6 +16,10 @@ class AddCDOXtextBindingsFragment extends Xtend2GeneratorFragment {
 			.addTypeToType(
 			  "org.eclipse.xtext.ui.editor.XtextEditor",
 			  "net.winklerweb.cdoxtext.runtime.CDOXtextEditor")
+			.addTypeToType(
+			  "org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder",
+			  "net.winklerweb.cdoxtext.runtime.CDOTextRegionAccessBuilder"
+			)
 			.bindings
 	}
 
