@@ -1,8 +1,8 @@
 package net.winklerweb.cdoxtext.generator
 
-import org.eclipse.xtext.generator.Xtend2GeneratorFragment
 import org.eclipse.xtext.Grammar
 import org.eclipse.xtext.generator.BindFactory
+import org.eclipse.xtext.generator.Xtend2GeneratorFragment
 
 class AddCDOXtextBindingsFragment extends Xtend2GeneratorFragment {
 
@@ -20,6 +20,12 @@ class AddCDOXtextBindingsFragment extends Xtend2GeneratorFragment {
 			  "org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder",
 			  "net.winklerweb.cdoxtext.runtime.CDOTextRegionAccessBuilder"
 			)
+			.addConfiguredBinding(
+					"org.eclipse.xtext.ui.editor.LanguageSpecificURIEditorOpener",
+					"if (org.eclipse.ui.PlatformUI.isWorkbenchRunning())" +
+						"binder.bind(org.eclipse.xtext.ui.editor.IURIEditorOpener.class)"
+							+ ".annotatedWith(org.eclipse.xtext.ui.LanguageSpecific.class)"
+							+ ".to(net.winklerweb.cdoxtext.runtime.CDOLanguageSpecificURIEditorOpener.class)")
 			.bindings
 	}
 
