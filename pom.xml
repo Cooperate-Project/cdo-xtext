@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>de.cooperateproject.cdoxtext</groupId>
 	<artifactId>de.cooperateproject.cdoxtext.parent</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Cooperate CDO-Xtext Integration</name>
 
