@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: CDO Xtext Bridge Runtime
 Bundle-SymbolicName: net.winklerweb.cdoxtext.runtime
-Bundle-Version: 0.1.0.qualifier
+Bundle-Version: 0.1.0
 Bundle-Activator: net.winklerweb.cdoxtext.runtime.CDOXtextPlugin
 Require-Bundle: org.eclipse.ui;visibility:=reexport,
  org.eclipse.core.runtime,
