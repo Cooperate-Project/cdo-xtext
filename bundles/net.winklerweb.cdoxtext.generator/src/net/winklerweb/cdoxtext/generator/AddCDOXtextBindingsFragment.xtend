@@ -6,6 +6,14 @@ import org.eclipse.xtext.generator.Xtend2GeneratorFragment
 
 class AddCDOXtextBindingsFragment extends Xtend2GeneratorFragment {
 
+	override getGuiceBindingsRt(Grammar grammar) {
+		new BindFactory().addTypeToType(
+			  "org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder",
+			  "net.winklerweb.cdoxtext.runtime.CDOTextRegionAccessBuilder"
+			)
+			.bindings
+	}
+
 	override getGuiceBindingsUi(Grammar grammar) {
 		new BindFactory().addTypeToType(
 		      "org.eclipse.xtext.ui.editor.model.XtextDocumentProvider",
@@ -16,10 +24,6 @@ class AddCDOXtextBindingsFragment extends Xtend2GeneratorFragment {
 			.addTypeToType(
 			  "org.eclipse.xtext.ui.editor.XtextEditor",
 			  "net.winklerweb.cdoxtext.runtime.CDOXtextEditor")
-			.addTypeToType(
-			  "org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder",
-			  "net.winklerweb.cdoxtext.runtime.CDOTextRegionAccessBuilder"
-			)
 			.addConfiguredBinding(
 					"org.eclipse.xtext.ui.editor.LanguageSpecificURIEditorOpener",
 					"if (org.eclipse.ui.PlatformUI.isWorkbenchRunning())" +
@@ -29,7 +33,8 @@ class AddCDOXtextBindingsFragment extends Xtend2GeneratorFragment {
 			.bindings
 	}
 
-	override getRequiredBundlesUi(Grammar grammar) {
-		#["net.winklerweb.cdoxtext.runtime"]
+	override getRequiredBundlesRt(Grammar grammar) {
+		#["net.winklerweb.cdoxtext.runtime;visibility:=reexport"]
 	}
+	
 }
