@@ -37,6 +37,7 @@ import org.eclipse.xtext.serializer.ISerializer
 import org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory
 import org.eclipse.xtext.ui.editor.model.XtextDocument
 import org.eclipse.xtext.ui.editor.model.XtextDocumentProvider
+import org.eclipse.emf.compare.scope.DefaultComparisonScope
 
 class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
@@ -138,7 +139,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 				val targetStateRoot = targetResource.contents.head
 				
 				// fire up EMFCompare				
-				val scope = EMFCompare::createDefaultScope(newStateRoot, targetStateRoot, originalStateRoot)
+				val scope = new DefaultComparisonScope(newStateRoot, targetStateRoot, originalStateRoot)
 		
 				val matcherRegistry = EMFCompareRCPPlugin::^default.matchEngineFactoryRegistry
 				val compare = EMFCompare::builder().setMatchEngineFactoryRegistry(matcherRegistry).build()
