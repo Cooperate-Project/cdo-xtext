@@ -8,6 +8,8 @@ import org.eclipse.xtext.generator.Generator
 import org.eclipse.xtext.generator.Naming
 import org.eclipse.xtext.generator.Xtend2ExecutionContext
 import org.eclipse.xtext.generator.Xtend2GeneratorFragment
+import org.eclipse.xtext.GeneratedMetamodel
+import org.eclipse.xtext.ReferencedMetamodel
 
 class EMFCompareMatcherFragment extends Xtend2GeneratorFragment {
 	
@@ -58,6 +60,22 @@ class EMFCompareMatcherFragment extends Xtend2GeneratorFragment {
 		generateDistanceFunction(ctx)
 	}
 	
+	private def determineRelevantNsURI() {
+		val generatedMetamodels = grammar.metamodelDeclarations.filter(GeneratedMetamodel)
+		if (generatedMetamodels.size > 1) {
+			throw new IllegalStateException("At most one generated meta-model is supported.")
+		}
+		if (generatedMetamodels.size == 1) {
+			return generatedMetamodels.head.EPackage.nsURI
+		}
+		
+		val referencedMetamodels = grammar.metamodelDeclarations.filter(ReferencedMetamodel)
+		if (referencedMetamodels.empty) {
+			throw new IllegalStateException("At least one meta-model has to be referenced.")
+		}
+		return referencedMetamodels.head.EPackage.nsURI
+	}
+	
 	def generateMatchEngineFactory(Xtend2ExecutionContext ctx) {
 		ctx.writeFile(Generator::SRC_UI, grammar.matchEngineFactoryName.asPath + ".xtend",
 			'''
@@ -71,11 +89,20 @@ class EMFCompareMatcherFragment extends Xtend2GeneratorFragment {
 			import org.eclipse.emf.compare.match.DefaultMatchEngine
 			import org.eclipse.emf.compare.match.eobject.ProximityEObjectMatcher
 			import org.eclipse.emf.compare.match.impl.MatchEngineFactoryImpl
+			import org.eclipse.emf.compare.scope.IComparisonScope
+			import org.eclipse.emf.ecore.EObject
 			
 			class «grammar.matchEngineFactoryName.toSimpleName» extends MatchEngineFactoryImpl { 
 				
+				private static final String NS_URI = "«determineRelevantNsURI»"
+				
 				@Inject
 				Provider<ProximityEObjectMatcher$DistanceFunction> dfProvider
+				
+				override isMatchEngineFactoryFor(IComparisonScope scope) {
+					val nsURIs = #{scope.left, scope.right, scope.origin}.filter(EObject).map[eClass.EPackage.nsURI].toSet
+					return nsURIs.size == 1 && NS_URI.equals(nsURIs.head)
+				}
 				
 				override getMatchEngine() {
 					val matcher = new ProximityEObjectMatcher(dfProvider.get)
