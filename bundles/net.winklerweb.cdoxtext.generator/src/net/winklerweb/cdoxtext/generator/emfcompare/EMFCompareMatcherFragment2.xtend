@@ -120,7 +120,7 @@ class EMFCompareMatcherFragment2 extends AbstractXtextGeneratorFragment {
 					}	
 				}
 			'''
-		).writeTo(projectConfig.eclipsePlugin.srcGen)
+		).writeTo(projectConfig.eclipsePlugin.src)
 
 	}
 
@@ -217,7 +217,7 @@ class EMFCompareMatcherFragment2 extends AbstractXtextGeneratorFragment {
 					}	
 				}
 			'''
-		).writeTo(projectConfig.eclipsePlugin.srcGen)
+		).writeTo(projectConfig.eclipsePlugin.src)
 	}
 
 }
