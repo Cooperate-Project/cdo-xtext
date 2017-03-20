@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>de.cooperateproject.cdoxtext</groupId>
 		<artifactId>de.cooperateproject.cdoxtext.parent</artifactId>
-		<version>0.1.2-SNAPSHOT</version>
+		<version>0.1.2</version>
 	</parent>
 	<artifactId>de.cooperateproject.cdoxtext.features</artifactId>
 	<packaging>pom</packaging>
