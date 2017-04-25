@@ -29,6 +29,7 @@ import org.eclipse.emf.compare.DifferenceSource
 import org.eclipse.emf.compare.EMFCompare
 import org.eclipse.emf.compare.merge.BatchMerger
 import org.eclipse.emf.compare.rcp.EMFCompareRCPPlugin
+import org.eclipse.emf.compare.scope.DefaultComparisonScope
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.source.AnnotationModel
 import org.eclipse.ui.IEditorInput
@@ -37,7 +38,6 @@ import org.eclipse.xtext.serializer.ISerializer
 import org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory
 import org.eclipse.xtext.ui.editor.model.XtextDocument
 import org.eclipse.xtext.ui.editor.model.XtextDocumentProvider
-import org.eclipse.emf.compare.scope.DefaultComparisonScope
 
 class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
@@ -75,6 +75,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val contents = resource.contents.head as CDOObject
 
 		if(contents != null) {
+		    resourceStateCalculator.simulateReloadingResource(contents);
 			resourceStateCalculator.calculateState(contents)
 			document.set(serializer.serialize(contents))
 		}
@@ -166,6 +167,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val rootObject = targetResource.contents.head as CDOObject
 		inputToResource.put(cdoInput, new OriginalInputState(documentResource, rootObject.cdoID, newCommitInfo.timeStamp))	
 
+        resourceStateCalculator.simulateReloadingResource(rootObject);
 		resourceStateCalculator.calculateState(rootObject);
 		document.set(serializer.serialize(rootObject))
  

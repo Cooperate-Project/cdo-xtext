@@ -7,5 +7,7 @@ public interface ICDOResourceStateCalculator {
 
 	void calculateState(Resource r);
 	void calculateState(EObject object);
+	void simulateReloadingResource(Resource r);
+    void simulateReloadingResource(EObject object);
 	
 }
