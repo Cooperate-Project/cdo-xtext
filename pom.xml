@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>de.cooperateproject.cdoxtext</groupId>
 	<artifactId>de.cooperateproject.cdoxtext.parent</artifactId>
-	<version>0.1.4-SNAPSHOT</version>
+	<version>0.1.4</version>
 	<packaging>pom</packaging>
 	<name>Cooperate CDO-Xtext Integration</name>
 
