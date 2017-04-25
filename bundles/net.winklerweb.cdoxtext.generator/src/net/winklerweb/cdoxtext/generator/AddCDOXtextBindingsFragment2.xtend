@@ -33,13 +33,11 @@ class AddCDOXtextBindingsFragment2 extends AbstractXtextGeneratorFragment {
 		registerguiceBindingsRt()
 		registerGuiceBindingsUi()
 		addRequiredBundles()
-		generateStateCalculator()
 	}
 	
 	def registerguiceBindingsRt() {
 		new GuiceModuleAccess.BindingFactory()
 		.addTypeToType(TextRegionAccessBuilder.typeRef, CDOTextRegionAccessBuilder.typeRef)
-		.addTypeToType(ICDOResourceStateCalculator.typeRef, stateCalculatorTypeRef)
 		.contributeTo(language.runtimeGenModule)
 	}
 	
@@ -60,41 +58,6 @@ class AddCDOXtextBindingsFragment2 extends AbstractXtextGeneratorFragment {
 		.addTypeToType(XtextEditor.typeRef, CDOXtextEditor.typeRef)
 		.addConfiguredBinding(LanguageSpecificURIEditorOpener.simpleName, uriEditorOpenerStatement)
 		.contributeTo(language.eclipsePluginGenModule)
-	}
-	
-	private def generateStateCalculator() {
-		fileAccessFactory.createJavaFile(
-			stateCalculatorTypeRef,
-			'''			
-			import org.eclipse.emf.ecore.EObject;
-			import org.eclipse.emf.ecore.resource.Resource;
-			import org.eclipse.xtext.resource.IDerivedStateComputer;
-			
-			import com.google.inject.Inject;
-			
-			import net.winklerweb.cdoxtext.runtime.ICDOResourceStateCalculator;
-			
-			public class «grammar.simpleName + "StateCalculator"» implements ICDOResourceStateCalculator {
-			
-			    @Inject
-			    private IDerivedStateComputer derivedStateComputer;
-			    
-			    @Override
-			    public void calculateState(Resource r) {
-			        if (!r.getContents().isEmpty()) {
-			            calculateState(r.getContents().get(0));
-			        }
-			    }
-			
-			    @Override
-			    public void calculateState(EObject object) {
-			        // TODO Auto-generated method stub
-			        return;
-			    }
-			
-			}
-			'''
-		).writeTo(projectConfig.runtime.src)
 	}
 	
 		
