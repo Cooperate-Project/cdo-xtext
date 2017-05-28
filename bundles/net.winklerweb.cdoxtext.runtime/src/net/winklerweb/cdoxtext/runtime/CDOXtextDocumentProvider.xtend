@@ -50,7 +50,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 	var IResourceForEditorInputFactory resourceForEditorInputFactory
 	
 	@Inject
-	var ICDOResourceStateCalculator resourceStateCalculator
+	var ICDOResourceStateHandler resourceStateHandler
 
 	/* instead of overriding createDocument(element), we just intercept isWorkspaceExternalEditorInput to
 	 * regard CDOLobEditorInput as workspace-external.
@@ -75,8 +75,9 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val contents = resource.contents.head as CDOObject
 
 		if(contents != null) {
-		    resourceStateCalculator.simulateReloadingResource(contents);
-			resourceStateCalculator.calculateState(contents)
+		    resourceStateHandler.cleanState(contents);
+		    resourceStateHandler.initState(contents);
+		    resourceStateHandler.calculateState(contents);
 			document.set(serializer.serialize(contents))
 		}
  
@@ -142,7 +143,8 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 			try {
 				val originalStateRoot = historicView.getObject(originalInputState.objectId, true)
 				val targetStateRoot = targetResource.contents.head
-				resourceStateCalculator.calculateState(targetStateRoot);
+                resourceStateHandler.initState(targetStateRoot);
+                resourceStateHandler.calculateState(targetStateRoot);
 				
 				// fire up EMFCompare				
 				val scope = new DefaultComparisonScope(newStateRoot, targetStateRoot, originalStateRoot)
@@ -167,8 +169,9 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val rootObject = targetResource.contents.head as CDOObject
 		inputToResource.put(cdoInput, new OriginalInputState(documentResource, rootObject.cdoID, newCommitInfo.timeStamp))	
 
-        resourceStateCalculator.simulateReloadingResource(rootObject);
-		resourceStateCalculator.calculateState(rootObject);
+        resourceStateHandler.cleanState(rootObject);
+        resourceStateHandler.initState(rootObject);
+        resourceStateHandler.calculateState(rootObject);
 		document.set(serializer.serialize(rootObject))
  
 		mon.done()
