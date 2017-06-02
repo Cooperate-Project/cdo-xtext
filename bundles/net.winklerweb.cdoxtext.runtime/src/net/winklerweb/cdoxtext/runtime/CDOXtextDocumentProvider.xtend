@@ -38,10 +38,13 @@ import org.eclipse.xtext.serializer.ISerializer
 import org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory
 import org.eclipse.xtext.ui.editor.model.XtextDocument
 import org.eclipse.xtext.ui.editor.model.XtextDocumentProvider
+import org.apache.log4j.Logger
+import org.eclipse.emf.common.util.Diagnostic
 
 class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
-	static var Map<IEditorInput, OriginalInputState> inputToResource = Collections::synchronizedMap(Maps::newHashMap()) 
+	static val Map<IEditorInput, OriginalInputState> inputToResource = Collections::synchronizedMap(Maps::newHashMap()) 
+ 	static val Logger LOGGER = Logger.getLogger(CDOXtextDocumentProvider) 
  
 	@Inject
 	var ISerializer serializer
@@ -152,6 +155,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 				val matcherRegistry = EMFCompareRCPPlugin::^default.matchEngineFactoryRegistry
 				val compare = EMFCompare::builder().setMatchEngineFactoryRegistry(matcherRegistry).build()
 				val result = compare.compare(scope, BasicMonitor::toMonitor(mon.newChild(1)))
+				result.diagnostic.children.filter(d | d.severity >= Diagnostic.WARNING).forEach[d | LOGGER.warn(d)]
 				
 				val merger = new BatchMerger(EMFCompareRCPPlugin::^default.mergerRegistry, [ diff | 
 					diff.source == DifferenceSource::LEFT 
