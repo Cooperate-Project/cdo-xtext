@@ -38,10 +38,15 @@ import org.eclipse.xtext.serializer.ISerializer
 import org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory
 import org.eclipse.xtext.ui.editor.model.XtextDocument
 import org.eclipse.xtext.ui.editor.model.XtextDocumentProvider
+import org.apache.log4j.Logger
+import org.eclipse.emf.common.util.Diagnostic
+import org.eclipse.emf.compare.diff.DefaultDiffEngine
+import org.eclipse.emf.compare.diff.DiffBuilder
 
 class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
-	static var Map<IEditorInput, OriginalInputState> inputToResource = Collections::synchronizedMap(Maps::newHashMap()) 
+	static val Map<IEditorInput, OriginalInputState> inputToResource = Collections::synchronizedMap(Maps::newHashMap()) 
+ 	static val Logger LOGGER = Logger.getLogger(CDOXtextDocumentProvider) 
  
 	@Inject
 	var ISerializer serializer
@@ -50,7 +55,10 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 	var IResourceForEditorInputFactory resourceForEditorInputFactory
 	
 	@Inject
-	var ICDOResourceStateCalculator resourceStateCalculator
+	var ICDOResourceStateHandler resourceStateHandler
+	
+	@Inject(optional=true)
+	var IFeatureFilter featureFilter
 
 	/* instead of overriding createDocument(element), we just intercept isWorkspaceExternalEditorInput to
 	 * regard CDOLobEditorInput as workspace-external.
@@ -75,8 +83,9 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val contents = resource.contents.head as CDOObject
 
 		if(contents != null) {
-		    resourceStateCalculator.simulateReloadingResource(contents);
-			resourceStateCalculator.calculateState(contents)
+		    resourceStateHandler.cleanState(contents);
+		    resourceStateHandler.initState(contents);
+		    resourceStateHandler.calculateState(contents);
 			document.set(serializer.serialize(contents))
 		}
  
@@ -139,17 +148,28 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 			targetResource.contents.add(newStateRoot)			
 		} else {
 			val historicView = cdoSession.openView(originalInputState.timestamp)
-			try {
+			try {			
 				val originalStateRoot = historicView.getObject(originalInputState.objectId, true)
+				resourceStateHandler.cleanState(originalStateRoot)
+                resourceStateHandler.initState(originalStateRoot)
+                resourceStateHandler.calculateState(originalStateRoot)
 				val targetStateRoot = targetResource.contents.head
-				resourceStateCalculator.calculateState(targetStateRoot);
+				resourceStateHandler.cleanState(targetStateRoot)
+                resourceStateHandler.initState(targetStateRoot)
+                resourceStateHandler.calculateState(targetStateRoot)
 				
-				// fire up EMFCompare				
+				// fire up EMFCompare								
 				val scope = new DefaultComparisonScope(newStateRoot, targetStateRoot, originalStateRoot)
 		
 				val matcherRegistry = EMFCompareRCPPlugin::^default.matchEngineFactoryRegistry
-				val compare = EMFCompare::builder().setMatchEngineFactoryRegistry(matcherRegistry).build()
+				val diffEngine = new DefaultDiffEngine(new DiffBuilder) {
+					override createFeatureFilter() {
+						return new FeatureFilterImpl(featureFilter)						
+					}
+				}
+				val compare = EMFCompare::builder().setDiffEngine(diffEngine).setMatchEngineFactoryRegistry(matcherRegistry).build()
 				val result = compare.compare(scope, BasicMonitor::toMonitor(mon.newChild(1)))
+				result.diagnostic.children.filter(d | d.severity >= Diagnostic.WARNING).forEach[d | LOGGER.warn(d)]
 				
 				val merger = new BatchMerger(EMFCompareRCPPlugin::^default.mergerRegistry, [ diff | 
 					diff.source == DifferenceSource::LEFT 
@@ -167,8 +187,9 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val rootObject = targetResource.contents.head as CDOObject
 		inputToResource.put(cdoInput, new OriginalInputState(documentResource, rootObject.cdoID, newCommitInfo.timeStamp))	
 
-        resourceStateCalculator.simulateReloadingResource(rootObject);
-		resourceStateCalculator.calculateState(rootObject);
+        resourceStateHandler.cleanState(rootObject);
+        resourceStateHandler.initState(rootObject);
+        resourceStateHandler.calculateState(rootObject);
 		document.set(serializer.serialize(rootObject))
  
 		mon.done()

@@ -6,7 +6,6 @@ import net.winklerweb.cdoxtext.runtime.CDOResourceForEditorInputFactory
 import net.winklerweb.cdoxtext.runtime.CDOTextRegionAccessBuilder
 import net.winklerweb.cdoxtext.runtime.CDOXtextDocumentProvider
 import net.winklerweb.cdoxtext.runtime.CDOXtextEditor
-import net.winklerweb.cdoxtext.runtime.ICDOResourceStateCalculator
 import org.eclipse.ui.PlatformUI
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder
