@@ -42,6 +42,7 @@ import org.apache.log4j.Logger
 import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.compare.diff.DefaultDiffEngine
 import org.eclipse.emf.compare.diff.DiffBuilder
+import java.util.ArrayList
 
 class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
@@ -105,7 +106,6 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 	}
 
 	override isModifiable(Object element) {
-
 		if (!(element instanceof CDOLobEditorInput)) {
 			return super.isModifiable(element)
 		}
@@ -124,22 +124,31 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 	}
 
 	override doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException {
-
 		if (!(element instanceof CDOLobEditorInput)) {
 			super.doSaveDocument(monitor, element, document, overwrite)
 			return
 		}
 
+		val finalizers = new ArrayList<Runnable>()
+		try {
+			doSaveDocument(monitor, element as CDOLobEditorInput, document, finalizers)			
+		} finally {
+			finalizers.forEach[run]
+		}
+	}
+	
+	private def doSaveDocument(IProgressMonitor monitor, CDOLobEditorInput cdoInput, IDocument document, ArrayList<Runnable> finalizers) {
 		val mon = SubMonitor::convert(monitor, 5)
 
 		// get modified model from XtextResource
-		val originalInputState = inputToResource.get(element)
-		val documentResource = originalInputState.resource
+		val originalInputState = inputToResource.get(cdoInput)
+		val documentResource = ResourceWrapper.create(originalInputState.resource)
+		finalizers.add(documentResource.disableStateCalculation)
 		val newStateRoot = documentResource.contents.head
 
 		// get original state from CDO
-		val cdoInput = element as CDOLobEditorInput 
-		val targetResource = cdoInput.resource as CDOResource
+		val targetResource = ResourceWrapper.create(cdoInput.resource as CDOResource)
+		finalizers.add(targetResource.disableStateCalculation)
 		
 		val cdoSession = cdoInput.resource.cdoView.session
 
@@ -182,10 +191,10 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 			}
 		}
 		
-		val transaction = targetResource.cdoView() as CDOTransaction
+		val transaction = targetResource.wrappedResource.cdoView() as CDOTransaction
 		val newCommitInfo = transaction.commit(mon.newChild(3))
 		val rootObject = targetResource.contents.head as CDOObject
-		inputToResource.put(cdoInput, new OriginalInputState(documentResource, rootObject.cdoID, newCommitInfo.timeStamp))	
+		inputToResource.put(cdoInput, new OriginalInputState(documentResource.wrappedResource, rootObject.cdoID, newCommitInfo.timeStamp))	
 
         resourceStateHandler.cleanState(rootObject);
         resourceStateHandler.initState(rootObject);
