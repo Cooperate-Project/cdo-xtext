@@ -13,6 +13,8 @@ public interface ICDOResourceStateHandler {
 
     void cleanState(EObject o);
     
+    void forceCleanState(EObject o);
+    
     default void initState(Resource r) {
         execute(r, this::initState);
     }
@@ -23,6 +25,10 @@ public interface ICDOResourceStateHandler {
     
     default void cleanState(Resource r) {
         execute(r, this::cleanState);
+    }
+
+    default void forceCleanState(Resource r) {
+    	execute(r, this::forceCleanState);
     }
 
     static void execute(Resource r, Consumer<EObject> o) {

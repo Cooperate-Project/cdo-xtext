@@ -11,10 +11,11 @@
  */
 package net.winklerweb.cdoxtext.runtime
 
-import com.google.common.collect.Maps
 import com.google.inject.Inject
-import java.util.Collections
+import java.util.ArrayList
 import java.util.Map
+import java.util.concurrent.ConcurrentHashMap
+import org.apache.log4j.Logger
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.SubMonitor
@@ -25,11 +26,14 @@ import org.eclipse.emf.cdo.eresource.CDOResource
 import org.eclipse.emf.cdo.internal.ui.CDOLobEditorInput
 import org.eclipse.emf.cdo.transaction.CDOTransaction
 import org.eclipse.emf.common.util.BasicMonitor
+import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.compare.DifferenceSource
 import org.eclipse.emf.compare.EMFCompare
 import org.eclipse.emf.compare.merge.BatchMerger
 import org.eclipse.emf.compare.rcp.EMFCompareRCPPlugin
 import org.eclipse.emf.compare.scope.DefaultComparisonScope
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.source.AnnotationModel
 import org.eclipse.ui.IEditorInput
@@ -38,16 +42,10 @@ import org.eclipse.xtext.serializer.ISerializer
 import org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory
 import org.eclipse.xtext.ui.editor.model.XtextDocument
 import org.eclipse.xtext.ui.editor.model.XtextDocumentProvider
-import org.apache.log4j.Logger
-import org.eclipse.emf.common.util.Diagnostic
-import org.eclipse.emf.compare.diff.DefaultDiffEngine
-import org.eclipse.emf.compare.diff.DiffBuilder
-import java.util.ArrayList
-import org.eclipse.emf.ecore.EObject
 
 class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
-	static val Map<IEditorInput, OriginalInputState> inputToResource = Collections::synchronizedMap(Maps::newHashMap()) 
+	static val Map<IEditorInput, OriginalInputState> inputToResource = new ConcurrentHashMap
  	static val Logger LOGGER = Logger.getLogger(CDOXtextDocumentProvider) 
  
 	@Inject
@@ -58,9 +56,6 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 	
 	@Inject
 	var ICDOResourceStateHandler resourceStateHandler
-	
-	@Inject(optional=true)
-	var IFeatureFilter featureFilter
 
 	/* instead of overriding createDocument(element), we just intercept isWorkspaceExternalEditorInput to
 	 * regard CDOLobEditorInput as workspace-external.
@@ -68,23 +63,22 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 	 * override as well.
 	 */
 	override isWorkspaceExternalEditorInput(Object element) {
-		return super.isWorkspaceExternalEditorInput(element) || (element instanceof CDOLobEditorInput)
+		return super.isWorkspaceExternalEditorInput(element) || element.isCDOInput
 	}
 	
 	override setDocumentContent(IDocument document, IEditorInput editorInput, String encoding) throws CoreException {
 
 		// default behavior for all other editor inputs		
-		if (!(editorInput instanceof CDOLobEditorInput)) {
+		if (!editorInput.isCDOInput) {
 			return super.setDocumentContent(document, editorInput, encoding)
 		}
 
 		// special behavior for CDOLobEditorInput
-		val cdoEditorInput = editorInput as CDOLobEditorInput
-		val resource = cdoEditorInput.resource as CDOResource
+		val resource = editorInput.CDOResource
 
 		val contents = resource.contents.head as CDOObject
 
-		if(contents != null) {
+		if(contents !== null) {
 		    resourceStateHandler.cleanState(contents);
 		    resourceStateHandler.initState(contents);
 		    resourceStateHandler.calculateState(contents);
@@ -97,7 +91,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		xtextDocument.setInput(xtextResource)
 
 		// we need to remember the XtextResource and the original object for saving ...
-		if(contents != null) {
+		if(contents !== null) {
 			inputToResource.put(editorInput, new OriginalInputState(xtextResource, contents.cdoID, System.currentTimeMillis()))			
 		} else {
 			inputToResource.put(editorInput, new OriginalInputState(xtextResource, null, CDORevision::INVALID_DATE))				
@@ -107,12 +101,11 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 	}
 
 	override isModifiable(Object element) {
-		if (!(element instanceof CDOLobEditorInput)) {
+		if (!element.isCDOInput) {
 			return super.isModifiable(element)
 		}
 
-		val cdoEditorInput = element as CDOLobEditorInput
-		return !cdoEditorInput.resource.cdoView.isReadOnly
+		return !element.CDOResource.cdoView.isReadOnly
 	}
 
 	override isReadOnly(Object element) {
@@ -125,7 +118,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 	}
 
 	override doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException {
-		if (!(element instanceof CDOLobEditorInput)) {
+		if (!element.isCDOInput) {
 			super.doSaveDocument(monitor, element, document, overwrite)
 			return
 		}
@@ -134,7 +127,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		var EObject newRootObject = null
 		val finalizers = new ArrayList<Runnable>()
 		try {
-			newRootObject = mergeChanges(element as CDOLobEditorInput, mon, finalizers);
+			newRootObject = mergeChanges(element as IEditorInput, mon, finalizers);
 		} finally {
 			finalizers.forEach[run]
 		}
@@ -143,18 +136,23 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		mon.done()	
 	}
 	
-	private def mergeChanges(CDOLobEditorInput cdoInput, SubMonitor mon, ArrayList<Runnable> finalizers) {
+	private def mergeChanges(IEditorInput cdoInput, SubMonitor mon, ArrayList<Runnable> finalizers) {
 		// get modified model from XtextResource
 		val originalInputState = inputToResource.get(cdoInput)
 		val documentResource = ResourceWrapper.create(originalInputState.resource)
 		finalizers.add(documentResource.disableStateCalculation)
 		val newStateRoot = documentResource.contents.head
+		val newStateResource = ResourceWrapper.create(newStateRoot.eResource)
+		finalizers.add(newStateResource.disableStateCalculation)
+		newStateResource.forceCleanup
+		resourceStateHandler.cleanState(newStateRoot)
 
 		// get original state from CDO
-		val targetResource = ResourceWrapper.create(cdoInput.resource as CDOResource)
+		val targetResource = ResourceWrapper.create(cdoInput.CDOResource)
 		finalizers.add(targetResource.disableStateCalculation)
+		targetResource.forceCleanup
 		
-		val cdoSession = cdoInput.resource.cdoView.session
+		val cdoSession = cdoInput.CDOResource.cdoView.session
 
 		if(originalInputState.timestamp == CDORevision::INVALID_DATE) {
 			// if the resource was empty before, add the new root
@@ -163,24 +161,13 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 			val historicView = cdoSession.openView(originalInputState.timestamp)
 			try {			
 				val originalStateRoot = historicView.getObject(originalInputState.objectId, true)
-				resourceStateHandler.cleanState(originalStateRoot)
-                resourceStateHandler.initState(originalStateRoot)
-                resourceStateHandler.calculateState(originalStateRoot)
+				originalStateRoot.eResource.forceCleanup
 				val targetStateRoot = targetResource.contents.head
-				resourceStateHandler.cleanState(targetStateRoot)
-                resourceStateHandler.initState(targetStateRoot)
-                resourceStateHandler.calculateState(targetStateRoot)
 				
 				// fire up EMFCompare								
 				val scope = new DefaultComparisonScope(newStateRoot, targetStateRoot, originalStateRoot)
-		
 				val matcherRegistry = EMFCompareRCPPlugin::^default.matchEngineFactoryRegistry
-				val diffEngine = new DefaultDiffEngine(new DiffBuilder) {
-					override createFeatureFilter() {
-						return new FeatureFilterImpl(featureFilter)						
-					}
-				}
-				val compare = EMFCompare::builder().setDiffEngine(diffEngine).setMatchEngineFactoryRegistry(matcherRegistry).build()
+				val compare = EMFCompare::builder().setMatchEngineFactoryRegistry(matcherRegistry).build()
 				val result = compare.compare(scope, BasicMonitor::toMonitor(mon.newChild(1)))
 				result.diagnostic.children.filter(d | d.severity >= Diagnostic.WARNING).forEach[d | LOGGER.warn(d)]
 				
@@ -200,10 +187,23 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val rootObject = targetResource.contents.head as CDOObject
 		inputToResource.put(cdoInput, new OriginalInputState(documentResource.wrappedResource, rootObject.cdoID, newCommitInfo.timeStamp))	
 
+        rootObject.recalculateState
+        newStateRoot.recalculateState
+        return rootObject
+	}
+	
+	private def recalculateState(EObject rootObject) {
         resourceStateHandler.cleanState(rootObject)
         resourceStateHandler.initState(rootObject)
         resourceStateHandler.calculateState(rootObject)
-        return rootObject
+	}
+	
+	private def forceCleanup(ResourceWrapper<? extends Resource> wrapper) {
+		wrapper.wrappedResource.forceCleanup
+	}
+	
+	private def forceCleanup(Resource r) {
+		resourceStateHandler.forceCleanState(r)
 	}
 	
 	override getEncoding(Object element) {
@@ -215,12 +215,22 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 	}
 	
 	override createAnnotationModel(Object element) {
-		if (element instanceof CDOLobEditorInput) {
+		if (element.isCDOInput) {
 			return new AnnotationModel();
 		}
 		return super.createAnnotationModel(element)
 	}
 	
+	private static def isCDOInput(Object element) {
+		return element instanceof CDOLobEditorInput
+	}
+	
+	private static def getCDOResource(Object editorInput) {
+		if (editorInput.isCDOInput) {
+			return (editorInput as CDOLobEditorInput).resource as CDOResource
+		}
+		return null
+	}
 }
 
 class OriginalInputState {
