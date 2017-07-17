@@ -43,6 +43,7 @@ import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.compare.diff.DefaultDiffEngine
 import org.eclipse.emf.compare.diff.DiffBuilder
 import java.util.ArrayList
+import org.eclipse.emf.ecore.EObject
 
 class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
@@ -129,17 +130,20 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 			return
 		}
 
+		val mon = SubMonitor::convert(monitor, 5)
+		var EObject newRootObject = null
 		val finalizers = new ArrayList<Runnable>()
 		try {
-			doSaveDocument(monitor, element as CDOLobEditorInput, document, finalizers)			
+			newRootObject = mergeChanges(element as CDOLobEditorInput, mon, finalizers);
 		} finally {
 			finalizers.forEach[run]
 		}
+		
+		document.set(serializer.serialize(newRootObject))
+		mon.done()	
 	}
 	
-	private def doSaveDocument(IProgressMonitor monitor, CDOLobEditorInput cdoInput, IDocument document, ArrayList<Runnable> finalizers) {
-		val mon = SubMonitor::convert(monitor, 5)
-
+	private def mergeChanges(CDOLobEditorInput cdoInput, SubMonitor mon, ArrayList<Runnable> finalizers) {
 		// get modified model from XtextResource
 		val originalInputState = inputToResource.get(cdoInput)
 		val documentResource = ResourceWrapper.create(originalInputState.resource)
@@ -196,12 +200,10 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val rootObject = targetResource.contents.head as CDOObject
 		inputToResource.put(cdoInput, new OriginalInputState(documentResource.wrappedResource, rootObject.cdoID, newCommitInfo.timeStamp))	
 
-        resourceStateHandler.cleanState(rootObject);
-        resourceStateHandler.initState(rootObject);
-        resourceStateHandler.calculateState(rootObject);
-		document.set(serializer.serialize(rootObject))
- 
-		mon.done()
+        resourceStateHandler.cleanState(rootObject)
+        resourceStateHandler.initState(rootObject)
+        resourceStateHandler.calculateState(rootObject)
+        return rootObject
 	}
 	
 	override getEncoding(Object element) {
