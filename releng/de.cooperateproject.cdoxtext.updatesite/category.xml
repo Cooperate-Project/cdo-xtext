@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/de.cooperateproject.cdoxtext.feature_0.2.1.qualifier.jar" id="de.cooperateproject.cdoxtext.feature" version="0.2.1.qualifier">
+   <feature url="features/de.cooperateproject.cdoxtext.feature_0.3.0.jar" id="de.cooperateproject.cdoxtext.feature" version="0.3.0">
       <category name="cdoxtext"/>
    </feature>
    <category-def name="cdoxtext" label="CDO-Xtext Integration"/>
