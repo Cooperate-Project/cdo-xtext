@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.SubMonitor
 import org.eclipse.emf.cdo.CDOObject
+import org.eclipse.emf.cdo.common.branch.CDOBranch
 import org.eclipse.emf.cdo.common.id.CDOID
 import org.eclipse.emf.cdo.common.revision.CDORevision
 import org.eclipse.emf.cdo.eresource.CDOResource
@@ -92,9 +93,9 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
 		// we need to remember the XtextResource and the original object for saving ...
 		if(contents !== null) {
-			inputToResource.put(editorInput, new OriginalInputState(xtextResource, contents.cdoID, System.currentTimeMillis()))			
+			inputToResource.put(editorInput, new OriginalInputState(xtextResource, resource.cdoView.branch, contents.cdoID, System.currentTimeMillis()))			
 		} else {
-			inputToResource.put(editorInput, new OriginalInputState(xtextResource, null, CDORevision::INVALID_DATE))				
+			inputToResource.put(editorInput, new OriginalInputState(xtextResource, resource.cdoView.branch, null, CDORevision::INVALID_DATE))				
 		}
 	
 		return true
@@ -158,7 +159,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 			// if the resource was empty before, add the new root
 			targetResource.contents.add(newStateRoot)			
 		} else {
-			val historicView = cdoSession.openView(originalInputState.timestamp)
+			val historicView = cdoSession.openView(originalInputState.cdobranch, originalInputState.timestamp)
 			try {			
 				val originalStateRoot = historicView.getObject(originalInputState.objectId, true)
 				originalStateRoot.eResource.forceCleanup
@@ -185,7 +186,7 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 		val transaction = targetResource.wrappedResource.cdoView() as CDOTransaction
 		val newCommitInfo = transaction.commit(mon.newChild(3))
 		val rootObject = targetResource.contents.head as CDOObject
-		inputToResource.put(cdoInput, new OriginalInputState(documentResource.wrappedResource, rootObject.cdoID, newCommitInfo.timeStamp))	
+		inputToResource.put(cdoInput, new OriginalInputState(documentResource.wrappedResource, newCommitInfo.branch, rootObject.cdoID, newCommitInfo.timeStamp))	
 
         rootObject.recalculateState
         newStateRoot.recalculateState
@@ -235,11 +236,13 @@ class CDOXtextDocumentProvider extends XtextDocumentProvider {
 
 class OriginalInputState {
 	public XtextResource resource
+	public CDOBranch cdobranch;
 	public CDOID objectId
 	public long timestamp
 	
-	new(XtextResource resource, CDOID cdoid, long timestamp) {
+	new(XtextResource resource, CDOBranch cdobranch, CDOID cdoid, long timestamp) {
 		this.resource = resource
+		this.cdobranch = cdobranch;
 		this.objectId = cdoid
 		this.timestamp = timestamp
 	}
