@@ -11,13 +11,13 @@
  */
 package net.winklerweb.cdoxtext.runtime
 
-import org.eclipse.core.runtime.URIUtil
 import org.eclipse.emf.cdo.internal.ui.CDOLobEditorInput
+import org.eclipse.emf.common.util.URI
 import org.eclipse.ui.IEditorInput
+import org.eclipse.xtext.resource.ResourceSetReferencingResourceSet
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory
 import org.eclipse.xtext.ui.editor.model.ResourceForIEditorInputFactory
-import org.eclipse.xtext.resource.ResourceSetReferencingResourceSet
 
 class CDOResourceForEditorInputFactory extends ResourceForIEditorInputFactory implements IResourceForEditorInputFactory {
 
@@ -31,9 +31,8 @@ class CDOResourceForEditorInputFactory extends ResourceForIEditorInputFactory im
 
 		val cdoEditorInput = input as CDOLobEditorInput
 		val emfUri = cdoEditorInput.resource.URI
-		val uri = URIUtil::fromString(emfUri.toString)
-
-		val resource = createResource(uri)
+		
+		val resource = createCDOResource(emfUri)
 		if (resource instanceof XtextResource) {
 			(resource as XtextResource).validationDisabled = false
 		}
@@ -41,5 +40,14 @@ class CDOResourceForEditorInputFactory extends ResourceForIEditorInputFactory im
 			(resource.resourceSet as ResourceSetReferencingResourceSet).referencedResourceSets.add(cdoEditorInput.resource.cdoView.resourceSet)
 		}
 		return resource
+	}
+	
+	private def createCDOResource(URI emfUri) {
+		val resourceSet = getResourceSet(null);
+		configureResourceSet(resourceSet, emfUri);
+		val resource = resourceFactory.createResource(emfUri) as XtextResource;
+		resourceSet.getResources().add(resource);
+		resource.setValidationDisabled(true);
+		return resource;
 	}
 }
