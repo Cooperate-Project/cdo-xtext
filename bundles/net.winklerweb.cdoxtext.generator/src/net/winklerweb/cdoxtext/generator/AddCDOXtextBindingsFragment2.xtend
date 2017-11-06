@@ -5,14 +5,12 @@ import net.winklerweb.cdoxtext.runtime.CDOLanguageSpecificURIEditorOpener
 import net.winklerweb.cdoxtext.runtime.CDOResourceForEditorInputFactory
 import net.winklerweb.cdoxtext.runtime.CDOTextRegionAccessBuilder
 import net.winklerweb.cdoxtext.runtime.CDOXtextDocumentProvider
-import net.winklerweb.cdoxtext.runtime.CDOXtextEditor
 import org.eclipse.ui.PlatformUI
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder
 import org.eclipse.xtext.ui.LanguageSpecific
 import org.eclipse.xtext.ui.editor.IURIEditorOpener
 import org.eclipse.xtext.ui.editor.LanguageSpecificURIEditorOpener
-import org.eclipse.xtext.ui.editor.XtextEditor
 import org.eclipse.xtext.xtext.generator.AbstractXtextGeneratorFragment
 import org.eclipse.xtext.xtext.generator.XtextGeneratorNaming
 import org.eclipse.xtext.xtext.generator.model.FileAccessFactory
@@ -54,7 +52,6 @@ class AddCDOXtextBindingsFragment2 extends AbstractXtextGeneratorFragment {
 		new GuiceModuleAccess.BindingFactory()
 		.addTypeToType("org.eclipse.xtext.ui.editor.model.XtextDocumentProvider".typeRef, CDOXtextDocumentProvider.typeRef)
 		.addTypeToType("org.eclipse.xtext.ui.editor.model.IResourceForEditorInputFactory".typeRef, CDOResourceForEditorInputFactory.typeRef)
-		.addTypeToType(XtextEditor.typeRef, CDOXtextEditor.typeRef)
 		.addConfiguredBinding(LanguageSpecificURIEditorOpener.simpleName, uriEditorOpenerStatement)
 		.contributeTo(language.eclipsePluginGenModule)
 	}
